@@ -23,6 +23,7 @@ class HashTable:
     def __init__(self, capacity):
         self.capacity = capacity
         self.hash_table = [None]*capacity
+        self.num_items = 0
 
 
     def get_num_slots(self):
@@ -35,7 +36,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        return self.capacity
 
 
     def get_load_factor(self):
@@ -44,7 +45,7 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        return self.num_items/self.capacity
 
 
     def fnv1(self, key):
@@ -91,7 +92,30 @@ class HashTable:
         Implement this.
         """
         i = self.hash_index(key)
-        self.hash_table[i] = value
+
+        # If bucket is empty, insert at index
+        if self.hash_table[i] is None:
+            self.hash_table[i] = HashTableEntry(key, value)
+            self.num_items += 1
+            if self.get_load_factor() > 0.7:
+                self.resize(self.capacity*2)
+            return
+
+        # If not empty, check if key already exists and overwrite
+        cur = self.hash_table[i]
+        while cur is not None:
+            if cur.key == key:
+                cur.value = value
+                return
+            cur = cur.next
+
+        # If key doesn't already exist, insert at beginning of bucket
+        head = self.hash_table[i]
+        self.hash_table[i] = HashTableEntry(key, value)
+        self.hash_table[i].next = head
+        self.num_items += 1
+        if self.get_load_factor() > 0.7:
+            self.resize(self.capacity*2)  
 
 
     def delete(self, key):
@@ -102,11 +126,26 @@ class HashTable:
 
         Implement this.
         """
+        # Check if key is head of bucket. Delete if so
         i = self.hash_index(key)
-        if self.hash_table[i] is None:
-            print('key not found!')
-            return
-        self.hash_table[i] = None
+        cur = self.hash_table[i]
+        if cur.key == key:
+            self.hash_table[i] = self.hash_table[i].next
+            self.num_items -= 1
+            return cur.value
+
+        # If not head, check rest of bucket
+        prev = cur
+        cur = cur.next
+        while cur is not None:
+            if cur.key == key:
+                prev.next = cur.next
+                self.num_items -= 1
+                return cur
+            prev = cur
+            cur = cur.next
+
+        print('key not found!')
 
 
     def get(self, key):
@@ -117,8 +156,14 @@ class HashTable:
 
         Implement this.
         """
+        # Check each item for key
         i = self.hash_index(key)
-        return self.hash_table[i]
+        cur = self.hash_table[i]
+        while cur is not None:
+            if cur.key == key:
+                return cur.value
+            cur = cur.next
+        return None
 
 
     def resize(self, new_capacity):
@@ -128,7 +173,15 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        self.capacity = new_capacity
+        old_table = self.hash_table
+        self.hash_table = [None]*new_capacity
+
+        for bucket in old_table:
+            cur = bucket
+            while cur is not None:
+                self.put(cur.key, cur.value)
+                cur = cur.next
 
 
 
