@@ -1,5 +1,17 @@
-def word_count(s):
-    # Your code here
+import re
+
+def word_count(my_str):
+
+  my_str = my_str.lower()
+  my_str = my_str.split(' ')
+  words = {}
+  for word in my_str:
+    new_word = re.sub(r"[^a-zA-Z0-9]+", '', word)
+    if new_word not in words:
+      words[new_word] = 1
+    else:
+      words[new_word] += 1
+  return words
 
 
 

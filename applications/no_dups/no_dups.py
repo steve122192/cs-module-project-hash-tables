@@ -1,5 +1,14 @@
-def no_dups(s):
-    # Your code here
+def no_dups(my_str):
+  new_str = ''
+  words = {}
+  my_str = my_str.split(' ')
+  for word in my_str:
+    if word not in words:
+      words[word] = 1
+      new_str += ' ' + word
+  if new_str[0] == ' ':
+    new_str = new_str[1:]
+  return new_str
 
 
 
